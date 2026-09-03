@@ -75,7 +75,7 @@ def generate_content():
     user_prompt = f"Temas ya usados recientemente (NO los repitas): {used_list_str}\n\nGenera un short nuevo."
 
     response = client.models.generate_content(
-        model="gemini-2.5-flash",
+        model="gemini-3.6-flash",
         contents=user_prompt,
         config={
             "system_instruction": SYSTEM_PROMPT,
