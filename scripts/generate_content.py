@@ -98,7 +98,7 @@ def _call_gemini(user_prompt, temperature=1.0):
     for attempt in range(1, max_retries + 1):
         try:
             return client.models.generate_content(
-                model="gemini-3.6-flash",
+                model="gemini-2.0-flash",
                 contents=user_prompt,
                 config={"system_instruction": SYSTEM_PROMPT, "temperature": temperature},
             )
