@@ -1,25 +1,38 @@
 """
-Convierte el guion en audio narrado usando edge-tts.
-No requiere API key ni tarjeta: usa las voces neuronales de Microsoft Edge
-de forma gratuita.
+Convierte el guion en audio narrado usando Piper TTS.
+
+A diferencia de edge-tts, Piper es un motor de voz que corre 100% en local:
+no se conecta a ningún servidor externo, así que no puede ser bloqueado por
+IP (el problema que sí tenía edge-tts en GitHub Actions). El modelo de voz
+(.onnx) se descarga una vez en el propio workflow, antes de llamar a esta
+función.
 """
-import asyncio
 import os
+import subprocess
 
-import edge_tts
-
-from config import TTS_VOICE, WORKDIR
-
-
-async def _generate(text, out_path):
-    communicate = edge_tts.Communicate(text, TTS_VOICE, rate="+2%")
-    await communicate.save(out_path)
+from config import PIPER_MODEL_PATH, WORKDIR
 
 
 def generate_voice(script_text, out_path=None):
-    out_path = out_path or os.path.join(WORKDIR, "voice.mp3")
+    out_path = out_path or os.path.join(WORKDIR, "voice.wav")
     os.makedirs(os.path.dirname(out_path), exist_ok=True)
-    asyncio.run(_generate(script_text, out_path))
+
+    if not os.path.exists(PIPER_MODEL_PATH):
+        raise FileNotFoundError(
+            f"No se encuentra el modelo de voz de Piper en {PIPER_MODEL_PATH}. "
+            "Revisa el paso 'Descargar el modelo de voz' del workflow."
+        )
+
+    result = subprocess.run(
+        ["piper", "--model", PIPER_MODEL_PATH, "--output_file", out_path],
+        input=script_text.encode("utf-8"),
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+    )
+
+    if result.returncode != 0:
+        raise RuntimeError(f"Error generando voz con Piper: {result.stderr.decode(errors='ignore')}")
+
     return out_path
 
 
