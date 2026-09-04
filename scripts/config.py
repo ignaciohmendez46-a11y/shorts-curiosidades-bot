@@ -28,7 +28,7 @@ MUSIC_VOLUME = 0.12  # volumen relativo de la música de fondo frente a la voz
 PIPER_VOICE_NAME = "es_ES-davefx-medium"
 
 # --- Rutas ---
-BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 ASSETS_DIR = os.path.join(BASE_DIR, "assets")
 MUSIC_DIR = os.path.join(ASSETS_DIR, "music")
 FONT_PATH = os.path.join(ASSETS_DIR, "fonts", "font.ttf")
