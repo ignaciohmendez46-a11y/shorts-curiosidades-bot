@@ -9,9 +9,11 @@ Genera el contenido del short usando Gemini:
 import json
 import os
 import re
+import time
 from datetime import datetime
 
 from google import genai
+from google.genai import errors as genai_errors
 
 from config import GEMINI_API_KEY, TOPICS_FILE
 
@@ -74,14 +76,28 @@ def generate_content():
 
     user_prompt = f"Temas ya usados recientemente (NO los repitas): {used_list_str}\n\nGenera un short nuevo."
 
-    response = client.models.generate_content(
-        model="gemini-3.6-flash",
-        contents=user_prompt,
-        config={
-            "system_instruction": SYSTEM_PROMPT,
-            "temperature": 1.0,
-        },
-    )
+    max_retries = 3
+    last_error = None
+    response = None
+    for attempt in range(1, max_retries + 1):
+        try:
+            response = client.models.generate_content(
+                model="gemini-3.6-flash",
+                contents=user_prompt,
+                config={
+                    "system_instruction": SYSTEM_PROMPT,
+                    "temperature": 1.0,
+                },
+            )
+            break
+        except genai_errors.ServerError as e:
+            last_error = e
+            wait = 15 * attempt  # 15s, 30s, 45s
+            print(f"Gemini sobrecargado (intento {attempt}/{max_retries}), reintentando en {wait}s...")
+            time.sleep(wait)
+
+    if response is None:
+        raise last_error
 
     data = _extract_json(response.text)
     _save_used_topic(data["topic"])
