@@ -26,13 +26,27 @@ jobs:
       - name: Instalar ffmpeg
         run: sudo apt-get update && sudo apt-get install -y ffmpeg imagemagick
 
-      - name: Permitir a ImageMagick generar texto
+      - name: Permitir a ImageMagick generar texto (política de seguridad por defecto lo bloquea)
         run: |
           sudo sed -i 's/rights="none" pattern="@\*"/rights="read|write" pattern="@*"/' /etc/ImageMagick-6/policy.xml || true
           sudo sed -i '/pattern="TEXT"/d' /etc/ImageMagick-6/policy.xml || true
 
       - name: Instalar dependencias Python
         run: pip install -r requirements.txt
+
+      - name: Caché del modelo de voz (Piper)
+        uses: actions/cache@v4
+        with:
+          path: voices
+          key: piper-voice-es_ES-davefx-medium-v1
+
+      - name: Descargar el modelo de voz si no está en caché
+        run: |
+          mkdir -p voices
+          if [ ! -f voices/es_ES-davefx-medium.onnx ]; then
+            curl -L -o voices/es_ES-davefx-medium.onnx "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx"
+            curl -L -o voices/es_ES-davefx-medium.onnx.json "https://huggingface.co/rhasspy/piper-voices/resolve/main/es/es_ES/davefx/medium/es_ES-davefx-medium.onnx.json"
+          fi
 
       - name: Generar y publicar el short
         env:
