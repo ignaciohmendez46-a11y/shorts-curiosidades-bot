@@ -22,8 +22,10 @@ TELEGRAM_CHAT_ID = os.environ["TELEGRAM_CHAT_ID"]
 VIDEO_WIDTH = 1080
 VIDEO_HEIGHT = 1920
 TARGET_DURATION = 30  # segundos aprox. de cada short
-TTS_VOICE = "es-ES-AlvaroNeural"  # voz en español (España), gratis vía edge-tts
 MUSIC_VOLUME = 0.12  # volumen relativo de la música de fondo frente a la voz
+
+# --- Voz (Piper, motor local, sin llamadas a servidores externos) ---
+PIPER_VOICE_NAME = "es_ES-davefx-medium"
 
 # --- Rutas ---
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -32,3 +34,5 @@ MUSIC_DIR = os.path.join(ASSETS_DIR, "music")
 FONT_PATH = os.path.join(ASSETS_DIR, "fonts", "font.ttf")
 WORKDIR = os.path.join(BASE_DIR, "workdir")
 TOPICS_FILE = os.path.join(BASE_DIR, "topics_used.json")
+VOICES_DIR = os.path.join(BASE_DIR, "voices")
+PIPER_MODEL_PATH = os.path.join(VOICES_DIR, f"{PIPER_VOICE_NAME}.onnx")
