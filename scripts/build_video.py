@@ -11,6 +11,14 @@ import os
 import random
 import textwrap
 
+from PIL import Image
+
+# Pillow >=10 eliminó Image.ANTIALIAS (ahora se llama Image.LANCZOS), pero
+# moviepy 1.0.3 todavía lo usa internamente. Este parche restaura el alias
+# sin tener que bajar la versión de Pillow (que google-genai necesita >=10).
+if not hasattr(Image, "ANTIALIAS"):
+    Image.ANTIALIAS = Image.LANCZOS
+
 from moviepy.editor import (
     AudioFileClip,
     CompositeAudioClip,
