@@ -1,1 +1,19 @@
-[]
+from datetime import datetime, timedelta
+
+DIAS_ENFRIAMIENTO = 30  # un tema no puede repetirse antes de este nº de días
+
+
+def _temas_en_enfriamiento(dias=DIAS_ENFRIAMIENTO):
+    """Devuelve los temas usados dentro de la ventana de enfriamiento (normalizados)."""
+    used = _load_used_topics()
+    limite = datetime.utcnow() - timedelta(days=dias)
+    recientes = []
+    for t in used:
+        try:
+            fecha = datetime.fromisoformat(t["date"])
+        except (KeyError, ValueError):
+            fecha = datetime.utcnow()  # si falta fecha, lo tratamos como reciente por seguridad
+        if fecha >= limite:
+            recientes.append(_normalizar(t["topic"]))
+    return set(recientes)
+
