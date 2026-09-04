@@ -2,9 +2,9 @@
 Genera el contenido del short usando Gemini:
 - tema de curiosidad (evitando repetir temas usados recientemente)
 - guion narrado (~28-32s hablado)
-- título llamativo para YouTube Shorts
-- descripción + hashtags
-- query en inglés para buscar el clip de vídeo en Pexels
+- titulo llamativo para YouTube Shorts
+- descripcion + hashtags
+- query en ingles para buscar el clip de video en Pexels
 """
 import json
 import os
@@ -22,23 +22,33 @@ client = genai.Client(api_key=GEMINI_API_KEY)
 
 DIAS_ENFRIAMIENTO = 30
 
-SYSTEM_PROMPT = """Eres un guionista experto en YouTube Shorts de curiosidades y datos random (ciencia, historia, animales, espacio, cuerpo humano, tecnologia, etc.).
-
-Devuelve SIEMPRE y UNICAMENTE un JSON valido (sin markdown, sin backticks, sin texto extra) con estas claves exactas:
-
-{
-  "topic": "tema corto en 2-4 palabras, usado para no repetir temas",
-  "title": "titulo en espanol, maximo 60 caracteres, con gancho o curiosidad, sin comillas",
-  "script": "guion en espanol, 65-85 palabras, tono cercano y sorprendente, empieza con un gancho fuerte en la primera frase, sin emojis, listo para ser narrado en voz alta en unos 28-32 segundos",
-  "description": "descripcion para YouTube de 2-3 frases, en espanol",
-  "hashtags": ["#shorts", "#curiosidades", "#dato3", "#dato4", "#dato5"],
-  "pexels_query": "2-4 palabras en ingles que describan una imagen o video generico relacionado con el tema, ej. ocean waves, brain neurons, ancient ruins"
-}
-
-Reglas:
-- El guion debe caber hablado en 30 segundos aproximadamente, no mas de 85 palabras.
-- No repitas ninguno de los temas ya usados que se te pasan.
-- El pexels_query debe describir algo visual generico y facil de encontrar en un banco de stock, paisajes, naturaleza, ciudad, laboratorio, espacio, animales, no algo demasiado especifico."""
+_PROMPT_LINEAS = [
+    "Eres un guionista experto en YouTube Shorts de curiosidades y datos random",
+    "(ciencia, historia, animales, espacio, cuerpo humano, tecnologia, etc.).",
+    "",
+    "Devuelve SIEMPRE y UNICAMENTE un JSON valido (sin markdown, sin backticks,",
+    "sin texto extra) con estas claves exactas:",
+    "",
+    "{",
+    '  "topic": "tema corto en 2-4 palabras, usado para no repetir temas",',
+    '  "title": "titulo en espanol, maximo 60 caracteres, con gancho o curiosidad, sin comillas",',
+    '  "script": "guion en espanol, 65-85 palabras, tono cercano y sorprendente,',
+    "empieza con un gancho fuerte en la primera frase, sin emojis, listo para",
+    'ser narrado en voz alta en unos 28-32 segundos",',
+    '  "description": "descripcion para YouTube de 2-3 frases, en espanol",',
+    '  "hashtags": ["#shorts", "#curiosidades", "#dato3", "#dato4", "#dato5"],',
+    '  "pexels_query": "2-4 palabras en ingles que describan una imagen o video',
+    "generico relacionado con el tema, ej. ocean waves, brain neurons, ancient ruins\"",
+    "}",
+    "",
+    "Reglas:",
+    "- El guion debe caber hablado en 30 segundos aproximadamente, no mas de 85 palabras.",
+    "- No repitas ninguno de los temas ya usados que se te pasan.",
+    "- El pexels_query debe describir algo visual generico y facil de encontrar en",
+    "un banco de stock, paisajes, naturaleza, ciudad, laboratorio, espacio, animales,",
+    "no algo demasiado especifico.",
+]
+SYSTEM_PROMPT = "\n".join(_PROMPT_LINEAS)
 
 
 def _normalizar(texto):
@@ -95,7 +105,7 @@ def _call_gemini(user_prompt, temperature=1.0):
         except genai_errors.ServerError as e:
             last_error = e
             wait = 15 * attempt
-            print(f"Gemini sobrecargado (intento {attempt}/{max_retries}), reintentando en {wait}s...")
+            print("Gemini sobrecargado (intento " + str(attempt) + "/" + str(max_retries) + "), reintentando en " + str(wait) + "s...")
             time.sleep(wait)
     raise last_error
 
@@ -109,8 +119,8 @@ def generate_content():
 
     for intento in range(1, max_intentos_tema + 1):
         user_prompt = (
-            f"Temas usados recientemente (NO los repitas, ni nada muy parecido): "
-            f"{used_topics_str}\n\nGenera un short nuevo."
+            "Temas usados recientemente (NO los repitas, ni nada muy parecido): "
+            + used_topics_str + "\n\nGenera un short nuevo."
         )
         response = _call_gemini(user_prompt, temperature=1.0 + intento * 0.1)
         data = _extract_json(response.text)
@@ -119,10 +129,10 @@ def generate_content():
             _save_used_topic(data["topic"])
             return data
 
-        print(f"Tema en enfriamiento ('{data['topic']}'), reintentando ({intento}/{max_intentos_tema})...")
+        print("Tema en enfriamiento ('" + data["topic"] + "'), reintentando (" + str(intento) + "/" + str(max_intentos_tema) + ")...")
 
-    data["topic"] = f"{data['topic']} (variante {len(used_normalizados) + 1})"
-    print(f"Forzando variante tras agotar reintentos: {data['topic']}")
+    data["topic"] = data["topic"] + " (variante " + str(len(used_normalizados) + 1) + ")"
+    print("Forzando variante tras agotar reintentos: " + data["topic"])
     _save_used_topic(data["topic"])
     return data
 
@@ -130,4 +140,3 @@ def generate_content():
 if __name__ == "__main__":
     content = generate_content()
     print(json.dumps(content, ensure_ascii=False, indent=2))
-
