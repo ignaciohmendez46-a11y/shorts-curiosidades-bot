@@ -56,12 +56,15 @@ def run():
 
     print("Subido correctamente:", url)
 
-    send_telegram_message(
-        f"✅ <b>Nuevo short publicado</b>\n\n"
-        f"📌 {content['title']}\n"
-        f"🔗 {url}\n"
-        f"🏷️ {' '.join(content['hashtags'])}"
-    )
+    try:
+        send_telegram_message(
+            f"✅ <b>Nuevo short publicado</b>\n\n"
+            f"📌 {content['title']}\n"
+            f"🔗 {url}\n"
+            f"🏷️ {' '.join(content['hashtags'])}"
+        )
+    except Exception as e:
+        print(f"⚠️ Aviso: no se pudo notificar por Telegram ({e}). El vídeo sí se subió correctamente.")
 
 
 if __name__ == "__main__":
