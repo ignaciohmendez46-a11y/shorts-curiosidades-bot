@@ -1,9 +1,5 @@
 [
   {
-    "topic": "Olor del espacio",
-    "date": "2026-09-07T06:12:18.558736"
-  },
-  {
     "topic": "Peso de las nubes",
     "date": "2026-09-07T11:38:10.567727"
   },
@@ -798,5 +794,9 @@
   {
     "topic": "Reconocimiento facial abejas",
     "date": "2026-11-27T16:08:49.008215"
+  },
+  {
+    "topic": "Temperatura de un rayo",
+    "date": "2026-11-27T20:05:59.149713"
   }
 ]
